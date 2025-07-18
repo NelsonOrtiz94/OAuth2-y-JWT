@@ -11,8 +11,6 @@ public class TestRestApi {
 
     @GetMapping
     public Map<String, Object> dataTest() {
-        Map<String, String> map = new HashMap<String, String>();
-        map.put("key1", "value1");
-        return Map.of();
+        return Map.of("message","Data Test");
     }
 }
