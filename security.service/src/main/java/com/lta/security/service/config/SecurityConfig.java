@@ -21,15 +21,15 @@ public class SecurityConfig {
     public InMemoryUserDetailsManager inMemoryUserDetailsManager() {
         return new InMemoryUserDetailsManager(
                 User.withUsername("user1")
-                        .password("{noop}password") // {noop} indicates no password encoder
+                        .password("{noop}1234") // {noop} indicates no password encoder
                         .authorities("USER")
                         .build(),
                 User.withUsername("user2")
-                        .password("{noop}password") // {noop} indicates no password encoder
+                        .password("{noop}5678") // {noop} indicates no password encoder
                         .authorities("USER")
                         .build(),
                 User.withUsername("user3")
-                        .password("{noop}password") // {noop} indicates no password encoder
+                        .password("{noop}910") // {noop} indicates no password encoder
                         .authorities("USER", "ADMIN")
                         .build()
         );
@@ -39,21 +39,15 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(authorize -> authorize
+                .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/token/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                .sessionManagement(sess -> sess
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .oauth2ResourceServer(resourceServer -> resourceServer
-                        // Aquí ya no invocamos el deprecated jwt(),
-                        // sino jwt(...) con un Customizer
-                        .jwt(withDefaults())
-                )
-                .httpBasic(withDefaults());
+                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .httpBasic(withDefaults()); // Solo Basic Auth
 
         return http.build();
     }
 
 }
+
