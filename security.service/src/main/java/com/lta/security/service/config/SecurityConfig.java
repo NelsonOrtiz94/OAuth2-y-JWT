@@ -50,6 +50,8 @@ public class SecurityConfig {
         this.passwordEncoder = passwordEncoder;
     }
 
+    //UserDetailsService permite cargar la información sobre los usuarios
+    //DaoAuthenticationProvider es un proveedor de autenticación que verifica usuarios y claves
     @Bean
     public AuthenticationManager authenticationManager(UserDetailsService userDetailsService){
         var authProvider = new DaoAuthenticationProvider();
@@ -67,6 +69,7 @@ public class SecurityConfig {
         );
     }
 
+    //Configuramos la autorización para las peticiones HTTP
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
@@ -74,20 +77,31 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth.requestMatchers("/token/**").permitAll())
                 .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                //Configura el servidor de recursos para usar JWT como mecanismo de autenticación
+                //.oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults()))
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
                 .httpBasic(Customizer.withDefaults())
                 .build();
     }
 
+    //Decodificar y validar tokens JWT entrantes (Usan la clave pública)
     @Bean
     JwtDecoder jwtDecoder(){
         return NimbusJwtDecoder.withPublicKey(publicKey).build();
     }
 
+    //Genera y firma los tokens JWT salientes (Clave privada y pública)
     @Bean
     JwtEncoder jwtEncoder(){
         JWK jwk = new RSAKey.Builder(publicKey).privateKey(privateKey).build();
         JWKSource<SecurityContext> jwkSource = new ImmutableJWKSet<>(new JWKSet(jwk));
         return new NimbusJwtEncoder(jwkSource);
     }
+
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
+    }
+
 }
